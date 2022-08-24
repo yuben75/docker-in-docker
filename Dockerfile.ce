@@ -2,21 +2,31 @@
 FROM mbentley/ubuntu:18.04
 LABEL maintainer="Matt Bentley <mbentley@mbentley.net>"
 
-ARG DOCKER_VER
-ARG BUILDX_VER
+ARG DOCKER_VER=20.10.17
+ARG BUILDX_VER=v0.9.1
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update &&\
-  apt-get install -y apt-transport-https ca-certificates curl gnupg iproute2 module-init-tools net-tools socat &&\
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - &&\
-  echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" > /etc/apt/sources.list.d/docker.list &&\
-  apt-get update &&\
-  apt-get install -y docker-ce &&\
-  apt-get purge -y docker-ce-rootless-extras docker-scan-plugin &&\
-  apt-get autoremove -y &&\
-  rm -rf /var/lib/apt/lists/* &&\
-  curl -fsSL -o /tmp/docker-buildx "https://github.com/docker/buildx/releases/download/${BUILDX_VER}/buildx-${BUILDX_VER}.linux-amd64" &&\
-  chmod +x /tmp/docker-buildx &&\
+  apt-get install -y apt-transport-https ca-certificates curl gnupg iproute2 module-init-tools net-tools socat 
+RUN \
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - 
+RUN \
+  echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" > /etc/apt/sources.list.d/docker.list 
+RUN \
+  apt-get update 
+RUN \
+  apt-get install -y docker-ce 
+RUN \
+  apt-get purge -y docker-ce-rootless-extras docker-scan-plugin 
+RUN \
+  apt-get autoremove -y 
+RUN \
+  rm -rf /var/lib/apt/lists/* 
+RUN \
+  curl -fsSL -o /tmp/docker-buildx "https://github.com/docker/buildx/releases/tag/${BUILDX_VER}/buildx-${BUILDX_VER}.linux-amd64" 
+RUN \
+  chmod +x /tmp/docker-buildx 
+RUN \
   mv /tmp/docker-buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 COPY entrypoint.sh /entrypoint.sh
@@ -24,3 +34,5 @@ COPY entrypoint.sh /entrypoint.sh
 VOLUME ["/var/lib/docker","/var/lib/containerd"]
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["dockerd","-s","overlay2","-H","unix:///var/run/docker.sock"]
+
+
